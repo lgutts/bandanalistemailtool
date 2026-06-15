@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#FCE776">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect rx='20' width='100' height='100' fill='%23FCE776'/><text x='50' y='72' font-size='60' text-anchor='middle' font-family='sans-serif' font-weight='bold'>B</text></svg>">
+  <title>Bandana List Builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#0f0f0f;--surface:#1a1a1a;--surface-2:#222;--border:#2a2a2a;--border-focus:#FCE776;--text:#e8e8e8;--text-dim:#888;--accent:#FCE776;--accent-hover:#fdd835;--danger:#ff6b6b;--success:#4ecdc4;--r:8px;--rl:12px}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5}
+
+    .header{background:var(--surface);border-bottom:1px solid var(--border);padding:20px 32px;display:flex;align-items:center;position:sticky;top:0;z-index:100;gap:16px}
+    .header-logo{width:32px;height:32px;background:var(--accent);border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:#000}
+    .header h1{font-size:18px;font-weight:600;letter-spacing:-0.3px}
+    .header h1 span{color:var(--accent)}
+    .badge{font-size:10px;font-weight:700;background:var(--accent);color:#000;padding:3px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:0.5px}
+    .count-pill{margin-left:auto;font-size:12px;font-weight:600;color:var(--text-dim)}
+    .count-pill b{color:var(--accent)}
+
+    .container{max-width:1200px;margin:0 auto;padding:32px;display:grid;grid-template-columns:1fr 500px;gap:32px}
+    @media(max-width:1100px){.container{grid-template-columns:1fr}.preview-panel{position:static!important}}
+    .input-panel{display:flex;flex-direction:column;gap:16px}
+    .preview-panel{position:sticky;top:90px;align-self:start;display:flex;flex-direction:column;gap:16px}
+
+    .section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-dim);margin-bottom:4px}
+    .field-group{display:flex;flex-direction:column;gap:4px}
+    .field-label{font-size:11px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px}
+
+    input{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;font-family:inherit;font-size:13px;color:var(--text);outline:none;transition:border-color .2s,background .2s;width:100%}
+    input:focus{border-color:var(--accent)}
+    input::placeholder{color:#555}
+    input.autofilled{border-color:rgba(78,205,196,.4);background:rgba(78,205,196,.05)}
+
+    .settings-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;display:flex;flex-direction:column;gap:12px}
+
+    .job-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;transition:border-color .2s}
+    .job-card:focus-within{border-color:var(--border-focus)}
+    .job-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .job-number{font-size:12px;font-weight:700;background:var(--accent);color:#000;width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .job-status{font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;background:var(--surface-2);color:var(--text-dim);transition:all .2s}
+    .job-status.loaded{background:rgba(78,205,196,.15);color:var(--success)}
+    .job-status.error{background:rgba(255,107,107,.15);color:var(--danger)}
+    .job-status.fetching{background:rgba(252,231,118,.15);color:var(--accent)}
+    .job-status.verified{background:rgba(78,205,196,.25);color:var(--success)}
+
+    .url-row{display:flex;gap:8px;margin-bottom:12px}
+    .url-row input{flex:1}
+    .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .detail-grid .full-width{grid-column:1/-1}
+
+    .id-verify{margin-bottom:12px;padding:8px 12px;border-radius:var(--r);font-size:11px;font-weight:500;display:none}
+    .id-verify.match{display:block;background:rgba(78,205,196,.1);border:1px solid rgba(78,205,196,.3);color:var(--success)}
+    .id-verify.mismatch{display:block;background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.3);color:var(--danger)}
+
+    .logo-row{display:flex;align-items:center;gap:10px;margin-top:12px;padding:8px;background:var(--bg);border-radius:var(--r)}
+    .logo-row img{width:28px;height:28px;border-radius:6px;background:#f0f0f0}
+    .logo-row span{font-size:11px;color:var(--text-dim);word-break:break-all}
+
+    .btn-fetch{background:var(--accent);color:#000;border:none;border-radius:var(--r);padding:10px 16px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .15s}
+    .btn-fetch:hover{background:var(--accent-hover)}
+    .btn-fetch:disabled{opacity:.4;cursor:not-allowed}
+
+    .card-actions{display:flex;align-items:center;gap:8px}
+    .clear-btn{background:none;border:1px solid var(--border);color:var(--text-dim);font-size:11px;font-weight:600;cursor:pointer;padding:4px 10px;border-radius:6px;font-family:inherit;transition:all .15s}
+    .clear-btn:hover{border-color:var(--text-dim);color:var(--text)}
+    .remove-btn{background:none;border:1px solid rgba(255,107,107,.3);color:var(--danger);font-size:11px;font-weight:600;cursor:pointer;padding:4px 10px;border-radius:6px;font-family:inherit;transition:all .15s}
+    .remove-btn:hover{background:rgba(255,107,107,.1);border-color:var(--danger)}
+
+    .add-card{width:100%;background:none;border:1.5px dashed var(--border);color:var(--text-dim);border-radius:var(--rl);padding:16px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+    .add-card:hover{border-color:var(--accent);color:var(--accent);background:rgba(252,231,118,.04)}
+
+    .empty-state{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:32px;text-align:center;color:var(--text-dim);font-size:13px}
+
+    .action-buttons{display:flex;gap:10px}
+    .btn-generate{flex:1;background:var(--accent);color:#000;border:none;border-radius:10px;padding:14px 24px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s}
+    .btn-generate:hover{background:var(--accent-hover);transform:translateY(-1px)}
+    .btn-copy{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:14px 20px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s}
+    .btn-copy:hover{border-color:var(--accent);color:var(--accent)}
+
+    .preview-frame{background:#fff;border-radius:var(--rl);overflow:hidden;max-height:700px;overflow-y:auto}
+    .preview-frame::-webkit-scrollbar{width:6px}
+    .preview-frame::-webkit-scrollbar-thumb{background:#ccc;border-radius:3px}
+
+    .toast{position:fixed;bottom:32px;right:32px;background:var(--success);color:#000;padding:12px 24px;border-radius:10px;font-weight:600;font-size:14px;transform:translateY(100px);opacity:0;transition:all .3s ease;z-index:999}
+    .toast.show{transform:translateY(0);opacity:1}
+
+    .schema-raw{margin-top:8px;font-size:11px;color:var(--text-dim);background:var(--bg);padding:8px;border-radius:6px;max-height:80px;overflow-y:auto;display:none;font-family:monospace;word-break:break-all;white-space:pre-wrap}
+    .schema-raw.visible{display:block}
+    .toggle-raw{background:none;border:none;color:var(--text-dim);font-size:11px;cursor:pointer;padding:4px 0;text-decoration:underline;margin-top:4px;font-family:inherit}
+
+    @media(max-width:600px){.container{padding:16px}.detail-grid{grid-template-columns:1fr}.detail-grid .full-width{grid-column:1}}
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">B</div>
+  <h1>Bandana <span>List Builder</span></h1>
+  <span class="badge">Iterable · Additive</span>
+  <span class="count-pill"><b id="card-count">0</b> jobs</span>
+</header>
+
+<main class="container">
+  <section class="input-panel">
+    <div class="settings-bar">
+      <div class="field-group">
+        <label class="field-label" for="greeting-name">Greeting Default Name</label>
+        <input type="text" id="greeting-name" value="there" placeholder="e.g. there">
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="greeting-line">Greeting Line</label>
+        <input type="text" id="greeting-line" value="Here are today's jobs recommended for you:" placeholder="e.g. Here are today's jobs recommended for you:">
+      </div>
+    </div>
+
+    <div id="job-cards"></div>
+    <button class="add-card" id="add-card">+ Add Job</button>
+  </section>
+
+  <aside class="preview-panel">
+    <div class="section-label">Email Preview</div>
+    <div class="preview-frame" id="preview-frame">
+      <div style="padding:40px 20px;text-align:center;color:#aaa;font-size:14px;">Add jobs → fill them in → Generate</div>
+    </div>
+    <div class="action-buttons">
+      <button class="btn-generate" id="btn-generate">Generate Email</button>
+      <button class="btn-copy" id="btn-copy">Copy HTML</button>
+    </div>
+  </aside>
+</main>
+
+<div class="toast" id="toast" role="alert"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  const LOGO_TOKEN = 'live_6a1a28fd-6420-4492-aeb0-b297461d9de2';
+  const STARTING_CARDS = 3;
+  let generatedHTML = '';
+  let nextId = 0;            // monotonic internal id (never reused)
+  const cardIds = [];        // internal ids in display order
+
+  // Parallel proxy race (Promise.any) — first good response wins
+  const PROXIES = [
+    url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    url => `https://thingproxy.freeboard.io/fetch/${url}`,
+  ];
+
+  const KNOWN_DOMAINS = {
+    'mta':'mta.info','metropolitan transportation authority':'mta.info',
+    'cvs':'cvs.com','cvs health':'cvs.com','walmart':'walmart.com','amazon':'amazon.com',
+    'target':'target.com','costco':'costco.com','ups':'ups.com','fedex':'fedex.com',
+    'usps':'usps.com','home depot':'homedepot.com','the home depot':'homedepot.com',
+    'lowes':'lowes.com',"lowe's":'lowes.com','starbucks':'starbucks.com',
+    'mcdonalds':'mcdonalds.com',"mcdonald's":'mcdonalds.com','chipotle':'chipotle.com',
+    'patreon':'patreon.com','dropbox':'dropbox.com','ramp':'ramp.com',
+    'squire':'getsquire.com','earnest':'earnest.com',
+    'nyc health + hospitals':'nychealthandhospitals.org','city of new york':'nyc.gov',
+    'nypd':'nyc.gov','dsny':'nyc.gov','state of new york':'ny.gov',
+    'amtrak':'amtrak.com','con edison':'coned.com','conedison':'coned.com',
+    'consolidated edison':'coned.com','united states courts':'uscourts.gov',
+    'van leeuwen':'vanleeuwenicecream.com',
+    'google':'google.com','meta':'meta.com','apple':'apple.com','microsoft':'microsoft.com',
+    'netflix':'netflix.com','jpmorgan chase':'jpmorganchase.com','life360':'life360.com',
+    'bank of america':'bankofamerica.com','wells fargo':'wellsfargo.com',
+  };
+
+  const $ = id => document.getElementById(id);
+  function logoUrl(d) { return `https://img.logo.dev/${d||'bandana.com'}?token=${LOGO_TOKEN}&size=128&retina=false&format=png&theme=dark`; }
+  function extractJobId(url) { const m = url.match(/\/jobs\/([a-f0-9-]{36})/i); return m ? m[1] : null; }
+  function guessDomain(c) { const k = c.toLowerCase().trim(); return KNOWN_DOMAINS[k] || k.replace(/[^a-z0-9]/g,'') + '.com'; }
+  function extractDomain(org) {
+    if (!org) return '';
+    for (const k of ['sameAs','url']) { if (org[k]) { try { return new URL(org[k].startsWith('http') ? org[k] : `https://${org[k]}`).hostname.replace(/^www\./,''); } catch(e){} } }
+    return '';
+  }
+
+  function extractSchemas(html) {
+    const schemas = [];
+    const re = /<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+    let m;
+    while ((m = re.exec(html)) !== null) {
+      try {
+        const d = JSON.parse(m[1].trim());
+        (Array.isArray(d) ? d : [d]).forEach(it => {
+          if (it['@type'] === 'JobPosting') schemas.push(it);
+          if (it['@graph']) it['@graph'].forEach(g => { if (g['@type'] === 'JobPosting') schemas.push(g); });
+        });
+      } catch(e) {}
+    }
+    return schemas;
+  }
+
+  function fmtSalary(bs) {
+    if (!bs) return '';
+    const v = bs.value; if (!v) return '';
+    let amt = '', unit = '';
+    if (typeof v === 'object') {
+      const ut = (v.unitText||'').toUpperCase();
+      unit = {HOUR:'/hr',YEAR:'/yr',MONTH:'/mo'}[ut]||'';
+      if (v.minValue!=null && v.maxValue!=null) amt = `$${Number(v.minValue).toFixed(2)} - $${Number(v.maxValue).toFixed(2)}`;
+      else if (v.value!=null) amt = `$${Number(v.value).toFixed(2)}`;
+      else if (v.minValue!=null) amt = `$${Number(v.minValue).toFixed(2)}+`;
+    } else if (typeof v === 'number') amt = `$${v.toFixed(2)}`;
+    return amt ? `${amt}${unit}` : '';
+  }
+
+  function fmtLocation(jl) {
+    if (!jl) return '';
+    const loc = Array.isArray(jl) ? jl[0] : jl;
+    if (!loc) return '';
+    const a = loc.address;
+    if (!a) return loc.name||'';
+    if (typeof a === 'string') return a;
+    return [a.addressLocality, a.addressRegion].filter(Boolean).join(', ');
+  }
+
+  // Race all proxies; resolve with first ok response, reject only if all fail
+  async function fetchOne(url, proxyFn) {
+    const r = await fetch(proxyFn(url), { signal: AbortSignal.timeout(12000) });
+    if (!r.ok) throw new Error('bad status');
+    const t = await r.text();
+    if (t.length < 500) throw new Error('too short');
+    return t;
+  }
+  async function fetchWithProxy(url) {
+    try {
+      return await Promise.any(PROXIES.map(p => fetchOne(url, p)));
+    } catch (e) {
+      throw new Error('All proxies failed');
+    }
+  }
+
+  function setField(id,f,v) { const el=$(`${f}-${id}`); el.value=v; el.classList.add('autofilled'); setTimeout(()=>el.classList.remove('autofilled'),3000); }
+  function setStatus(id,t,c) { const el=$(`status-${id}`); if(!el)return; el.textContent=t; el.className='job-status'+(c?` ${c}`:''); }
+  function showToast(msg) { const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500); }
+  function updateLogoPreview(id) {
+    const d=$(`domain-${id}`).value.trim();
+    if(d){$(`logo-img-${id}`).src=logoUrl(d);$(`logo-url-${id}`).textContent=d;$(`domain-${id}`).dataset.manual='true';}
+  }
+
+  function clearJob(id) {
+    ['url','title','company','domain','salary','location'].forEach(f=>{$(`${f}-${id}`).value='';$(`${f}-${id}`).classList.remove('autofilled');});
+    $(`logo-img-${id}`).src=logoUrl('bandana.com');$(`logo-url-${id}`).textContent='—';
+    $(`id-verify-${id}`).style.display='none';
+    $(`schema-raw-${id}`).textContent='';$(`schema-raw-${id}`).classList.remove('visible');
+    delete $(`domain-${id}`).dataset.manual;
+    setStatus(id,'Empty','');
+  }
+
+  async function fetchJob(id) {
+    const urlInput=$(`url-${id}`).value.trim();
+    if(!urlInput||!urlInput.includes('bandana.com/jobs/')){setStatus(id,'Invalid URL','error');return;}
+    const urlJobId=extractJobId(urlInput);
+    if(!urlJobId){setStatus(id,'No job ID','error');return;}
+
+    const btn=$(`fetch-btn-${id}`);btn.disabled=true;btn.textContent='...';
+    setStatus(id,'Fetching...','fetching');
+    $(`id-verify-${id}`).className='id-verify';$(`id-verify-${id}`).style.display='none';
+
+    try {
+      const html=await fetchWithProxy(urlInput);
+      const schemas=extractSchemas(html);
+      $(`schema-raw-${id}`).textContent=schemas.length?JSON.stringify(schemas[0],null,2):'No JobPosting schema found';
+
+      if(!schemas.length){
+        const tm=html.match(/<title[^>]*>(.*?)<\/title>/i);
+        if(tm){
+          const parts=tm[1].replace(/&amp;/g,'&').replace(/&#39;/g,"'").split(' - ');
+          if(parts.length>=2){
+            setField(id,'company',parts[0].replace(/\s*Jobs?\s*$/i,'').trim());
+            setField(id,'title',(parts[1]||'').trim());
+            if(parts.length>2)setField(id,'location',parts.slice(2).join(', ').trim());
+            $(`domain-${id}`).value=guessDomain(parts[0].replace(/\s*Jobs?\s*$/i,'').trim());
+            updateLogoPreview(id);
+          }
+        }
+        setStatus(id,'No schema — title fallback','loaded');
+        btn.disabled=false;btn.textContent='Fetch';return;
+      }
+
+      const s=schemas[0];
+      let sid='';
+      if(s.identifier)sid=typeof s.identifier==='string'?s.identifier:(s.identifier.value||'');
+      if(!sid)sid=s['@id']||s.url||'';
+      const sUrl=s.url||s['@id']||'';
+      let ok=false;
+      const vEl=$(`id-verify-${id}`);
+      if(String(sid).includes(urlJobId)||sUrl.includes(urlJobId)){
+        ok=true;vEl.className='id-verify match';
+        vEl.innerHTML=`✅ <strong>ID Verified</strong> — <code style="font-size:10px;background:rgba(78,205,196,.15);padding:2px 6px;border-radius:3px">${urlJobId}</code>`;
+      } else if(sid||sUrl){
+        vEl.className='id-verify mismatch';
+        vEl.innerHTML=`⚠️ <strong>Check ID</strong>`;
+      } else {
+        ok=true;vEl.className='id-verify match';vEl.innerHTML=`✅ <strong>Data loaded</strong>`;
+      }
+      vEl.style.display='block';
+
+      const title=s.title||s.name||'';
+      const org=s.hiringOrganization||{};
+      const company=org.name||'';
+      const salary=fmtSalary(s.baseSalary);
+      const location=fmtLocation(s.jobLocation);
+      const domain=extractDomain(org)||guessDomain(company);
+
+      if(title)setField(id,'title',title);
+      if(company)setField(id,'company',company);
+      if(salary)setField(id,'salary',salary);
+      if(location)setField(id,'location',location);
+      if(domain){$(`domain-${id}`).value=domain;$(`domain-${id}`).classList.add('autofilled');updateLogoPreview(id);}
+
+      setStatus(id,ok?'Verified ✓':'Loaded (check ID)',ok?'verified':'loaded');
+    } catch(err){
+      console.error(err);setStatus(id,'Fetch failed','error');
+    }
+    btn.disabled=false;btn.textContent='Fetch';
+  }
+
+  /* ===== ADD / REMOVE / RENUMBER ===== */
+  function cardMarkup(id) {
+    return `
+      <div class="job-card" data-card="${id}">
+        <div class="job-card-header">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="job-number">?</div>
+            <span class="job-name-label" style="font-size:14px;font-weight:600">Job</span>
+          </div>
+          <div class="card-actions">
+            <span class="job-status" id="status-${id}">Empty</span>
+            <button class="clear-btn" data-clear="${id}">Clear</button>
+            <button class="remove-btn" data-remove="${id}">Remove</button>
+          </div>
+        </div>
+        <div class="url-row">
+          <input type="text" id="url-${id}" placeholder="https://bandana.com/jobs/..." data-fetch="${id}">
+          <button class="btn-fetch" id="fetch-btn-${id}" data-fetchbtn="${id}">Fetch</button>
+        </div>
+        <div class="id-verify" id="id-verify-${id}"></div>
+        <div class="detail-grid">
+          <div class="field-group full-width"><label class="field-label">Job Title</label><input type="text" id="title-${id}" placeholder="e.g. Seasonal Ice Cream Server"></div>
+          <div class="field-group"><label class="field-label">Company</label><input type="text" id="company-${id}" placeholder="e.g. Van Leeuwen" data-company="${id}"></div>
+          <div class="field-group"><label class="field-label">Domain (logo)</label><input type="text" id="domain-${id}" placeholder="e.g. vanleeuwenicecream.com" data-domain="${id}"></div>
+          <div class="field-group"><label class="field-label">Pay</label><input type="text" id="salary-${id}" placeholder="e.g. $24.00/hr"></div>
+          <div class="field-group"><label class="field-label">Location</label><input type="text" id="location-${id}" placeholder="e.g. Brooklyn, NY"></div>
+        </div>
+        <div class="logo-row">
+          <img id="logo-img-${id}" src="${logoUrl('bandana.com')}" alt="">
+          <span id="logo-url-${id}">—</span>
+        </div>
+        <button class="toggle-raw" data-toggle="${id}">Show raw schema</button>
+        <div class="schema-raw" id="schema-raw-${id}"></div>
+      </div>`;
+  }
+
+  function renumber() {
+    const cards = $('job-cards').querySelectorAll('.job-card');
+    cards.forEach((card, i) => {
+      card.querySelector('.job-number').textContent = i + 1;
+      card.querySelector('.job-name-label').textContent = `Job ${i + 1}`;
+    });
+    $('card-count').textContent = cards.length;
+  }
+
+  function addCard(focus) {
+    const id = ++nextId;
+    cardIds.push(id);
+    $('job-cards').insertAdjacentHTML('beforeend', cardMarkup(id));
+    renumber();
+    if (focus) $(`url-${id}`).focus();
+  }
+
+  function removeCard(id) {
+    const el = $('job-cards').querySelector(`.job-card[data-card="${id}"]`);
+    if (el) el.remove();
+    const i = cardIds.indexOf(id);
+    if (i > -1) cardIds.splice(i, 1);
+    renumber();
+  }
+
+  /* ===== GENERATE EMAIL ===== */
+  function generateEmail() {
+    const greetingName=$('greeting-name').value||'there';
+    const greetingLine=$('greeting-line').value||"Here are today's jobs recommended for you:";
+    const preheader=' &#847;'.repeat(150);
+
+    const jobs=[];
+    // iterate in DOM order
+    $('job-cards').querySelectorAll('.job-card').forEach(card => {
+      const id = card.dataset.card;
+      const title=$(`title-${id}`).value.trim();
+      const company=$(`company-${id}`).value.trim();
+      const domain=$(`domain-${id}`).value.trim();
+      const salary=$(`salary-${id}`).value.trim();
+      const location=$(`location-${id}`).value.trim();
+      const url=$(`url-${id}`).value.trim()||'https://bandana.com/search';
+      if(!title&&!company) return;
+      jobs.push({
+        title:title||'Job Title',
+        compLoc:[company,location].filter(Boolean).join(' \u00B7 '),
+        salary:salary||'',
+        url,
+        logo:logoUrl(domain||'bandana.com')
+      });
+    });
+
+    if(!jobs.length){alert('Fill in at least one job (title or company).');return;}
+
+    let jobsHTML='';
+    jobs.forEach((j,i) => {
+      const isLast = i === jobs.length - 1;
+      const pad = i === 0 ? 'padding-bottom: 0;' : 'padding-top: 16px;';
+      const divider = isLast ? '' : `
+              <table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr><td style="border-bottom: 1px solid #f0ede6;"></td></tr></table>`;
+
+      jobsHTML += `
+          <!-- JOB ${i+1} -->
+          <tr>
+            <td style="${pad}">
+              <table role="presentation" cellpadding="0" cellspacing="0" width="100%" class="job-row">
+                <tr>
+                  <td colspan="2" style="padding-bottom: 8px;">
+                    <a href="${j.url}" target="_blank" class="job-title" style="font-size: 15px; font-weight: 700; color: #191919; text-decoration: none;">${j.title}</a>
+                  </td>
+                </tr>
+                <tr class="job-info-row">
+                  <td class="info-cell" style="vertical-align: middle; padding-bottom: 20px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <!--[if mso]><td width="36" style="width:36px; vertical-align:middle; padding-right:12px;"><![endif]-->
+                        <td width="36" style="width: 36px; min-width: 36px; vertical-align: middle; padding-right: 12px;">
+                          <img src="${j.logo}" alt="" width="36" height="36" style="display: block; border-radius: 8px; background: #f0f0f0;">
+                        </td>
+                        <td style="vertical-align: middle;">
+                          <p style="margin: 0; font-size: 13px; color: #525252; line-height: 1.35;">${j.compLoc||'Company'}</p>
+                          <p style="margin: 3px 0 0 0; font-size: 13px; font-weight: 600; color: #191919; line-height: 1.35;">${j.salary}</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td class="btn-cell" align="right" style="vertical-align: middle; padding-bottom: 20px; white-space: nowrap;">
+                    <a href="${j.url}" target="_blank" class="btn-details">View Details</a>
+                  </td>
+                </tr>
+              </table>${divider}
+            </td>
+          </tr>`;
+    });
+
+    generatedHTML=`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jobs for You</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+    body, table, td, p, a { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .job-title { color: #191919; text-decoration: none; }
+    .job-title:hover { text-decoration: underline; }
+    .btn-details { display: inline-block; padding: 8px 18px; border: 1.5px solid #d4d0c8; border-radius: 8px; font-size: 13px; font-weight: 600; color: #191919; text-decoration: none; background: #ffffff; white-space: nowrap; }
+    .btn-details:hover { background: #f7f3ec; }
+    .footer-link { color: #9a9a9a; text-decoration: underline; }
+    @media only screen and (max-width: 600px) {
+      .outer-pad { padding: 24px 16px !important; }
+      .job-info-row .info-cell,
+      .job-info-row .btn-cell {
+        display: block !important;
+        width: 100% !important;
+        text-align: left !important;
+      }
+      .job-info-row .btn-cell {
+        padding-top: 10px !important;
+        padding-bottom: 20px !important;
+      }
+      .job-info-row .info-cell {
+        padding-bottom: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; width: 100%; background-color: #ffffff; font-size: 15px; line-height: 1.5; color: #191919; -webkit-font-smoothing: antialiased;">
+  <div style="display: none; max-height: 0px; overflow: hidden; mso-hide: all;">${preheader}
+  </div>
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #ffffff;">
+    <tr>
+      <td align="center" class="outer-pad" style="padding: 40px 24px 32px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width: 480px;">
+          <!-- Bandana Logo -->
+          <tr>
+            <td align="center" style="padding-bottom: 32px;">
+              <img src="http://cdn.mcauto-images-production.sendgrid.net/b8e738f0a339492e/d4b5b65d-4eed-48ed-aff8-521902cd4284/128x128.png" alt="Bandana" width="40" height="40" style="display: block;">
+            </td>
+          </tr>
+          <!-- Greeting -->
+          <tr>
+            <td style="padding-bottom: 4px;">
+              <p style="margin: 0; font-size: 15px; color: #191919;">Hi {{defaultIfEmpty firstName "${greetingName}"}},</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-bottom: 28px;">
+              <p style="margin: 0; font-size: 15px; color: #525252;">${greetingLine}</p>
+            </td>
+          </tr>
+${jobsHTML}
+          <!-- CTA -->
+          <tr>
+            <td align="center" style="padding: 32px 0 40px;">
+              <table role="presentation" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="border-radius: 999px; background-color: #FCE776;">
+                    <a href="https://bandana.com/search" target="_blank" style="display: inline-block; padding: 14px 32px; font-size: 15px; font-weight: 700; color: #191919; text-decoration: none;">See More Jobs</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="padding-top: 8px; border-top: 1px solid #f0ede6;">
+              <p style="margin: 16px 0 6px; font-size: 12px; color: #9a9a9a; line-height: 1.5;">
+                Bandana Inc. &middot; 314 Kent Ave, Brooklyn, NY 11249
+              </p>
+              <p style="margin: 0 0 4px; font-size: 12px; color: #9a9a9a; line-height: 1.5;">
+                Dave &middot; Your personal job assistant :)
+              </p>
+              <p style="margin: 0; font-size: 12px; color: #9a9a9a; line-height: 1.5;">
+                <a href="{{unsubscribeUrl}}" class="footer-link" style="color: #9a9a9a; text-decoration: underline;">Manage preferences</a> &middot;
+                <a href="{{unsubscribeUrl}}" class="footer-link" style="color: #9a9a9a; text-decoration: underline;">Unsubscribe</a> &middot;
+                <a href="https://bandana.com/privacy" target="_blank" class="footer-link" style="color: #9a9a9a; text-decoration: underline;">Privacy</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+    $('preview-frame').innerHTML=`<iframe srcdoc="${generatedHTML.replace(/"/g,'&quot;')}" style="width:100%;height:700px;border:none;"></iframe>`;
+  }
+
+  function copyHTML(){
+    if(!generatedHTML)generateEmail();
+    if(!generatedHTML)return;
+    navigator.clipboard.writeText(generatedHTML).then(()=>showToast('HTML copied!')).catch(()=>{
+      const t=document.createElement('textarea');t.value=generatedHTML;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);showToast('Copied!');
+    });
+  }
+
+  /* Events */
+  document.addEventListener('click', e => {
+    const rm=e.target.closest('[data-remove]');   if(rm) return removeCard(+rm.dataset.remove);
+    const cl=e.target.closest('[data-clear]');     if(cl) return clearJob(+cl.dataset.clear);
+    const fb=e.target.closest('[data-fetchbtn]');  if(fb) return fetchJob(+fb.dataset.fetchbtn);
+    const tg=e.target.closest('[data-toggle]');    if(tg) return $(`schema-raw-${tg.dataset.toggle}`).classList.toggle('visible');
+  });
+  document.addEventListener('input', e => {
+    const co=e.target.closest('[data-company]'); if(co){const id=+co.dataset.company;const c=$(`company-${id}`).value.trim();const d=$(`domain-${id}`);if(c&&!d.dataset.manual){d.value=guessDomain(c);updateLogoPreview(id);}}
+    const dm=e.target.closest('[data-domain]');  if(dm) return updateLogoPreview(+dm.dataset.domain);
+  });
+  document.addEventListener('keydown', e => {
+    const ui=e.target.closest('[data-fetch]'); if(ui&&e.key==='Enter') return fetchJob(+ui.dataset.fetch);
+  });
+  $('add-card').addEventListener('click', () => addCard(true));
+  $('btn-generate').addEventListener('click', generateEmail);
+  $('btn-copy').addEventListener('click', copyHTML);
+
+  // start with a few cards
+  for (let i = 0; i < STARTING_CARDS; i++) addCard(false);
+})();
+</script>
+</body>
+</html>
