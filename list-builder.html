@@ -512,32 +512,10 @@
             </td>
           </tr>
 ${jobsHTML}
-          <!-- CTA -->
+          <!-- Browse more -->
           <tr>
-            <td align="center" style="padding: 32px 0 40px;">
-              <table role="presentation" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="border-radius: 999px; background-color: #FCE776;">
-                    <a href="https://bandana.com/search" target="_blank" style="display: inline-block; padding: 14px 32px; font-size: 15px; font-weight: 700; color: #191919; text-decoration: none;">See More Jobs</a>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <!-- Footer -->
-          <tr>
-            <td style="padding-top: 8px; border-top: 1px solid #f0ede6;">
-              <p style="margin: 16px 0 6px; font-size: 12px; color: #9a9a9a; line-height: 1.5;">
-                Bandana Inc. &middot; 314 Kent Ave, Brooklyn, NY 11249
-              </p>
-              <p style="margin: 0 0 4px; font-size: 12px; color: #9a9a9a; line-height: 1.5;">
-                Dave &middot; Your personal job assistant :)
-              </p>
-              <p style="margin: 0; font-size: 12px; color: #9a9a9a; line-height: 1.5;">
-                <a href="{{unsubscribeUrl}}" class="footer-link" style="color: #9a9a9a; text-decoration: underline;">Manage preferences</a> &middot;
-                <a href="{{unsubscribeUrl}}" class="footer-link" style="color: #9a9a9a; text-decoration: underline;">Unsubscribe</a> &middot;
-                <a href="https://bandana.com/privacy" target="_blank" class="footer-link" style="color: #9a9a9a; text-decoration: underline;">Privacy</a>
-              </p>
+            <td align="center" style="padding: 28px 0 0;">
+              <a href="https://bandana.com/search" target="_blank" style="font-size: 15px; font-weight: 600; color: #525252; text-decoration: underline;">Browse more jobs</a>
             </td>
           </tr>
         </table>
@@ -545,7 +523,38 @@ ${jobsHTML}
     </tr>
   </table>
 </body>
-</html>`;
+</html>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-family: Arial, sans-serif;">
+  <tr>
+    <td align="center" style="padding: 20px 20px 0 20px;">
+      <p style="margin: 0 0 8px 0; font-size: 12px; color: #808080;">
+        Bandana Apply. Real Applications No Busy Work.
+      </p>
+      <a href="https://bandana.com/?job-match=1&utm_source=google&utm_medium=email&utm_campaign=Bandana_Match_Emails" style="font-size: 12px; color: #808080; text-decoration: underline;">
+        Learn More Here
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding: 20px;">
+      <a href="https://apps.apple.com/us/app/bandana-job-search/id6755500772">
+        <img src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/en-us?size=250x83" alt="Download on the App Store" width="150" style="display: block; border: 0;">
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding: 0 20px 20px 20px;">
+      <p style="margin: 0; font-size: 12px; color: #808080;">
+        You're receiving this because of your job preferences on Bandana.
+      </p>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding: 0 20px 20px 20px;">
+      {{{ snippet "locationcity" }}}
+    </td>
+  </tr>
+</table>`;
 
     $('preview-frame').innerHTML=`<iframe srcdoc="${generatedHTML.replace(/"/g,'&quot;')}" style="width:100%;height:700px;border:none;"></iframe>`;
   }
